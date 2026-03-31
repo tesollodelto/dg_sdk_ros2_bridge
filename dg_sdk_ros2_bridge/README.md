@@ -7,7 +7,7 @@
 > - **Firmware–SDK Compatibility:**
 >   | Model | Minimum Firmware Version | Required SDK Version | Notes |
 >   |--------|--------------------------|----------------------|--------|
->   | **B model** | v3.6 or later | **DG SDK v1.6.0+** | Motor direction were revised starting from fimware v3.6.|
+>   | **B model** | v3.6 or later | **DG SDK v1.6.0+** | Motor direction were revised starting from firmware v3.6.|
 >   | **M model** | v2.8 or later | **DG SDK v1.6.0+** | Motor direction were revised starting from firmware v2.8. |
 >
 > - You can obtain the updated SDK library (`libDGSDK.so`) from Tesollo’s official USB package or distribution.  
@@ -22,7 +22,7 @@
 > - Running on **ARM64 (aarch64)** platforms such as Jetson or Raspberry Pi is **not supported** and may lead to build or runtime errors.
 
 ## Overview
-The DG SDK ROS2 Bridge provides a ROS2 interface for the DELTO gripper, allowing Python developers to control the gripper without needing C++ knowledge. This bridge wraps the DG SDK (v1.4.0) and exposes its functionality through ROS2 services and messages.
+The DG SDK ROS2 Bridge provides a ROS2 interface for the DELTO gripper, allowing Python developers to control the gripper without needing C++ knowledge. This bridge wraps the DG SDK (v1.4.0 included; v1.6.0+ recommended) and exposes its functionality through ROS2 services and messages.
 
 ## Features
 - **Python-friendly Interface**: Control the gripper entirely through Python using ROS2 services
@@ -31,7 +31,7 @@ The DG SDK ROS2 Bridge provides a ROS2 interface for the DELTO gripper, allowing
 - **Complete Gripper Control**: System configuration, connection management, and operation control
 
 ## Requirements
-- ROS2 (tested on Humble)
+- ROS2 (tested on Humble and Jazzy)
 - DG SDK library (libDGSDK.so v1.4.0 included)
 - Python 3
 - dg_msgs package (custom messages and services)
@@ -86,6 +86,50 @@ The package includes a complete Python example (`example/dg3fb.py`) demonstratin
 - **Type**: `dg_msgs/srv/SystemStart`
 - **Purpose**: Start the gripper system operation
 
+### Service Categories
+
+The bridge exposes many services under the `/dg/` namespace. Key services by category:
+
+| Category | Service | Purpose |
+|----------|---------|---------|
+| **System** | `set_gripper_system` | Configure communication parameters (port, IP, baudrate, mode) |
+| **System** | `set_gripper_option` | Set model, joint count, finger count |
+| **System** | `system_start` | Start gripper operation |
+| **Connection** | `connect_to_gripper` | Establish connection |
+| **Connection** | `disconnect_to_gripper` | Disconnect from gripper |
+| **Motion** | `move_joint_all` | Move all joints simultaneously |
+| **Motion** | `move_joint_finger` | Move all joints in one finger |
+| **Motion** | `move_joint` | Move a single joint |
+| **Motion** | `move_servo_joint` | Servo (streaming) joint control |
+| **Motion** | `move_tcp_all` | Move all fingers in TCP (Cartesian) space |
+| **Sensor** | `get_received_gripper_data` | Read current joint positions/efforts |
+| **Sensor** | `get_received_fingertip_sensor_data` | Read fingertip F/T sensor data |
+| **Sensor** | `set_finger_tip_data_zero` | Zero/calibrate fingertip sensors |
+| **Config** | `set_joint_gain_pid` / `set_joint_gain_pid_all` | Set PID gains |
+| **Config** | `set_grasp_force` | Set grasping force |
+| **Recipe** | `load_recipe_pose_data` | Load a saved pose recipe |
+| **Recipe** | `load_recipe_grasp_data` | Load a saved grasp recipe |
+
+### Typical Workflow
+
+A typical session follows this sequence:
+
+```python
+# 1. Configure communication
+set_gripper_system(ip="169.254.186.72", port=502, communication_mode=0)
+
+# 2. Connect to the gripper
+connect_to_gripper()
+
+# 3. Start the system
+system_start()
+
+# 4. Move joints
+move_joint_all(positions=[...])
+```
+
+> **Tip:** Run `ros2 service list | grep dg` to see all available services at runtime.
+
 ## Example Code
 
 ```python
@@ -102,7 +146,7 @@ node = Node("gripper_control_node")
 # Configure system settings
 system_setting = GripperSystemSetting()
 system_setting.comport = "/dev/ttyUSB0"  # For serial connection
-system_setting.ip = "169.254.5.72"      # For Ethernet connection
+system_setting.ip = "169.254.186.72"      # For Ethernet connection
 system_setting.port = 502
 system_setting.communication_mode = 0    # 1: Serial, 0: Ethernet
 system_setting.control_mode = 1
@@ -135,7 +179,7 @@ system_setting.baudrate = 115200
 ### Ethernet (TCP/IP) Connection
 ```python
 system_setting.communication_mode = 0
-system_setting.ip = "169.254.5.72"  # Gripper IP address
+system_setting.ip = "169.254.186.72"  # Gripper IP address
 system_setting.port = 502            # Modbus TCP port
 ```
 
@@ -147,7 +191,7 @@ ROS2 Services/Messages (dg_msgs)
        ↓
 C++ Bridge Node (dg_sdk_ros2_bridge_node)
        ↓
-DG SDK Library (libDGSDK.so v1.4.0)
+DG SDK Library (libDGSDK.so)
        ↓
 DELTO Gripper Hardware
 ```
@@ -168,4 +212,4 @@ This architecture allows Python developers to control the gripper without dealin
 - Verify dg_msgs package is built and available
 
 ## License
-BSD-clause3 
+BSD-3-Clause
