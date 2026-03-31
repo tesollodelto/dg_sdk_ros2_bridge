@@ -88,12 +88,6 @@ def init(node):
     start_result = start_future.result()
     print("Start Message: ", start_result.result)
 
-    start_request = SystemStart.Request()
-    start_future = start_client.call_async(start_request)
-    rclpy.spin_until_future_complete(node, start_future)
-    start_result = start_future.result()
-    print("Start Message: ", start_result.result)
-
 
 def load_pose(node, pose_num):
     client = node.create_client(LoadRecipePoseData, "dg/load_recipe_pose_data")
