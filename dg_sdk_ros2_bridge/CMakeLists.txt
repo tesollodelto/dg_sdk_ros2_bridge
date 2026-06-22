@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(dg_sdk_ros2_bridge)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -28,10 +28,10 @@ target_link_libraries(dg_sdk_ros2_bridge_node
 )
 
 # Target dependencies
-ament_target_dependencies(dg_sdk_ros2_bridge_node
-  rclcpp
-  dg_msgs
-  std_msgs
+target_link_libraries(dg_sdk_ros2_bridge_node
+  rclcpp::rclcpp
+  ${dg_msgs_TARGETS}
+  ${std_msgs_TARGETS}
 )
 
 # Install executable
